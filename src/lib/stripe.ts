@@ -1,9 +1,29 @@
 import Stripe from 'stripe';
 
-// Client Stripe lato server
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-24.acacia' as const,
-  typescript: true,
+let _stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key || key.startsWith('pk_') && !key.startsWith('sk_')) {
+      throw new Error('STRIPE_SECRET_KEY non configurata');
+    }
+    _stripe = new Stripe(key, {
+      apiVersion: '2025-02-24.acacia' as const,
+      typescript: true,
+    });
+  }
+  return _stripe;
+}
+
+/**
+ * Client Stripe lato server (lazy) - usa getStripe() nelle funzioni
+ * @deprecated Usa getStripe() direttamente
+ */
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    return (getStripe() as never)[prop];
+  },
 });
 
 /**
@@ -14,7 +34,7 @@ export async function createPaymentIntent(
   currency: string = 'eur',
   metadata: Record<string, string> = {}
 ) {
-  return stripe.paymentIntents.create({
+  return getStripe().paymentIntents.create({
     amount: Math.round(amount * 100), // Stripe usa centesimi
     currency,
     metadata,
@@ -31,7 +51,7 @@ export async function verifyStripeWebhook(
   body: string,
   signature: string
 ): Promise<Stripe.Event> {
-  return stripe.webhooks.constructEvent(
+  return getStripe().webhooks.constructEvent(
     body,
     signature,
     process.env.STRIPE_WEBHOOK_SECRET!
