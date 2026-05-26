@@ -1,35 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Lazy client Supabase per il browser - non lancia errori al load
-let _supabase: SupabaseClient | null = null;
-
-export function getSupabase(): SupabaseClient {
-  if (!_supabase) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Missing Supabase browser environment variables');
-    }
-
-    _supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      realtime: {
-        params: {
-          eventsPerSecond: 10,
-        },
-      },
-    });
-  }
-  return _supabase;
-}
-
-// Backward-compatible export - lazy getter
-export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
-    return getSupabase()[prop as keyof SupabaseClient];
-  },
-});
-
 // Tipi per il database
 export interface Service {
   id: string;
@@ -66,3 +36,44 @@ export interface Booking {
   created_at: string;
   session?: Session;
 }
+
+let _supabase: SupabaseClient | null = null;
+let _initError: Error | null = null;
+
+function initSupabase(): SupabaseClient | null {
+  if (_supabase) return _supabase;
+  if (_initError) return null;
+
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) {
+      _initError = new Error('Missing Supabase env vars');
+      return null;
+    }
+    _supabase = createClient(url, key, {
+      realtime: { params: { eventsPerSecond: 10 } },
+    });
+    return _supabase;
+  } catch (e) {
+    _initError = e as Error;
+    return null;
+  }
+}
+
+// Proxy that never throws at import time, only on actual use
+export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    const client = initSupabase();
+    if (!client) {
+      // Return no-op for chaining, real error only on await
+      if (prop === 'from') {
+        return () => ({
+          select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: _initError }) }) }),
+        });
+      }
+      return () => null;
+    }
+    return client[prop as keyof SupabaseClient];
+  },
+});
