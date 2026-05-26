@@ -8,7 +8,7 @@ interface PrenotaPageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Prenota — OMA Hub',
+  title: 'Prenota — Guapacha',
 };
 
 async function getService(serviceId: string): Promise<Service | null> {

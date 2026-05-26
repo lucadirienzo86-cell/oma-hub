@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = searchParams.get('page') || 'home';
 
-  const [blocksRes, mediaRes, jobsRes] = await Promise.all([
+  const [blocksRes, mediaRes, jobsRes] = await Promise.allSettled([
     supabase
       .from('content_blocks')
       .select('*')
@@ -25,15 +25,14 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: true }),
   ]);
 
-  const error = blocksRes.error || mediaRes.error || jobsRes.error;
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  const blocks = blocksRes.status === 'fulfilled' && !blocksRes.value.error ? blocksRes.value.data ?? [] : [];
+  const media = mediaRes.status === 'fulfilled' && !mediaRes.value.error ? mediaRes.value.data ?? [] : [];
+  const pendingVideoJobs = jobsRes.status === 'fulfilled' && !jobsRes.value.error ? jobsRes.value.data ?? [] : [];
 
   return NextResponse.json({
     page,
-    blocks: blocksRes.data ?? [],
-    media: mediaRes.data ?? [],
-    pendingVideoJobs: jobsRes.data ?? [],
+    blocks,
+    media,
+    pendingVideoJobs,
   });
 }

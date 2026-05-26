@@ -45,10 +45,9 @@ export default function BookingForm({ serviceId, onSuccess }: BookingFormProps) 
         .select('*, service:services(*)')
         .eq('service_id', serviceId)
         .gt('start_time', new Date().toISOString())
-        .lt('current_bookings', 10) // max_capacity default 1 ma funziona sempre
         .order('start_time', { ascending: true });
 
-      if (sess) setSessions(sess);
+      if (sess) setSessions(sess.filter((session) => session.current_bookings < session.max_capacity));
     }
 
     loadData();
@@ -294,7 +293,7 @@ export default function BookingForm({ serviceId, onSuccess }: BookingFormProps) 
             </div>
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? <Spinner /> : 'Conferma e Paga'}
+              {loading ? <Spinner /> : 'Invia richiesta di prenotazione'}
             </Button>
           </motion.form>
         )}
@@ -313,10 +312,10 @@ export default function BookingForm({ serviceId, onSuccess }: BookingFormProps) 
               </svg>
             </div>
             <h2 className="text-fluid-xl font-display text-sand-700 mb-2">
-              Prenotazione confermata!
+              Richiesta ricevuta!
             </h2>
             <p className="text-sand-500">
-              Riceverai una conferma via email con tutti i dettagli.
+              Ti contatteremo a breve per conferma disponibilità e dettagli finali.
             </p>
           </motion.div>
         )}

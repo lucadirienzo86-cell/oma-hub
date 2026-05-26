@@ -48,10 +48,10 @@ export default function RootLayout({
                 <a href="/servizi" className="text-sm text-sand-600 hover:text-sand-800 transition-colors">
                   Servizi
                 </a>
-                <a href="/#chi-siamo" className="text-sm text-sand-600 hover:text-sand-800 transition-colors">
+                <a href="/#manifesto" className="text-sm text-sand-600 hover:text-sand-800 transition-colors">
                   Chi Siamo
                 </a>
-                <a href="/#contatti" className="text-sm text-sand-600 hover:text-sand-800 transition-colors">
+                <a href="/#cta" className="text-sm text-sand-600 hover:text-sand-800 transition-colors">
                   Contatti
                 </a>
                 <a
@@ -85,33 +85,33 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <h3 className="text-xl font-display text-sand-100 mb-3">OMA</h3>
+                <h3 className="text-xl font-display text-sand-100 mb-3">Guapacha</h3>
                 <p className="text-sm text-sand-400">
-                  Organic Movement & Alignment Hub.
+                  Social dance, wedding, eventi e percorsi individuali.
                   <br />
-                  Il tuo spazio per il movimento consapevole.
+                  Movimento, eleganza, community.
                 </p>
               </div>
               <div>
                 <h4 className="font-medium text-sand-200 mb-3">Contatti</h4>
                 <p className="text-sm text-sand-400">
-                  Via del Benessere, 42
+                  Roma Parioli
                   <br />
-                  20121 Milano, Italia
+                  Su appuntamento
                   <br />
-                  info@oma-hub.it
+                  lucadirienzo86@gmail.com
                 </p>
               </div>
               <div>
                 <h4 className="font-medium text-sand-200 mb-3">Seguici</h4>
                 <div className="flex gap-4">
-                  <a href="#" className="text-sand-400 hover:text-sand-200 text-sm">Instagram</a>
-                  <a href="#" className="text-sand-400 hover:text-sand-200 text-sm">Facebook</a>
+                  <a href="/servizi" className="text-sand-400 hover:text-sand-200 text-sm">Servizi</a>
+                  <a href="/#cta" className="text-sand-400 hover:text-sand-200 text-sm">Contatti</a>
                 </div>
               </div>
             </div>
             <div className="border-t border-sand-700 mt-8 pt-8 text-center text-sm text-sand-500">
-              © {new Date().getFullYear()} OMA Hub. Tutti i diritti riservati.
+              © {new Date().getFullYear()} Guapacha. Tutti i diritti riservati.
             </div>
           </div>
         </footer>

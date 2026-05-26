@@ -43,17 +43,24 @@ const SpaceTunnelScene = dynamic(() => import('@/components/Scene3D/SpaceTunnel'
 export default function HomePage() {
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [media, setMedia] = useState<MediaAsset[]>([]);
-  const [jobs, setJobs] = useState<VideoJob[]>([]);
 
   useEffect(() => {
     fetch('/api/content?page=home')
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) {
+          throw new Error('Content API unavailable');
+        }
+
+        return r.json();
+      })
       .then((data) => {
         setBlocks(data.blocks || []);
         setMedia(data.media || []);
-        setJobs(data.pendingVideoJobs || []);
       })
-      .catch(() => {});
+      .catch(() => {
+        setBlocks([]);
+        setMedia([]);
+      });
   }, []);
 
   const hero = blocks.find((b) => b.key === 'home_hero');
@@ -76,7 +83,7 @@ export default function HomePage() {
             Community.
           </motion.h1>
           <motion.p className="text-fluid-lg text-sand-500 mb-10 max-w-xl mx-auto" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}>
-            {hero?.body || 'Social dance, wedding, eventi, corsi PRO e sessioni individuali. Un luxury movement studio ispirato a yes-dancebiennale.'}
+            {hero?.body || 'Social dance, wedding, eventi, corsi PRO e sessioni individuali. Un luogo elegante dove tecnica, presenza e community si incontrano.'}
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href={hero?.cta_href || '/servizi'}><Button size="lg">{hero?.cta_label || 'Scopri i corsi'}</Button></a>
@@ -143,26 +150,6 @@ export default function HomePage() {
                     {asset.description && <p className="text-sand-500 mt-2">{asset.description}</p>}
                   </div>
                 </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {jobs.length > 0 && (
-        <section className="py-20 px-4 bg-sand-200/30">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-10">
-              <p className="text-xs uppercase tracking-[0.35em] text-terra-400 mb-3">Grok queue</p>
-              <h2 className="text-fluid-2xl font-display text-sand-700">Video da generare</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {jobs.slice(0, 6).map((job) => (
-                <div key={job.id} className="bento-item p-5">
-                  <p className="text-xs uppercase tracking-[0.25em] text-terra-400 mb-2">{job.section}</p>
-                  <h3 className="font-display text-sand-700 text-lg mb-2">{job.status}</h3>
-                  <p className="text-sand-500 text-sm">{job.prompt}</p>
-                </div>
               ))}
             </div>
           </div>
