@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const AGENT_SECRET = process.env.AGENT_SECRET_KEY;
 
+if (!AGENT_SECRET) {
+  throw new Error('AGENT_SECRET_KEY non configurata');
+}
+
 /**
  * POST /api/agent/scan
  * Trigger per l'Agent OS per scan sessioni vuoti

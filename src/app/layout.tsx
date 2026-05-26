@@ -11,14 +11,14 @@ const inter = Inter({
 
 // Metadati SEO
 export const metadata: Metadata = {
-  title: 'OMA — Organic Movement & Alignment Hub',
+  title: 'Guapacha — Movement, elegance, community',
   description:
-    'Centro olistico per ballo, yoga e massaggi. Prenota la tua esperienza di movimento consapevole.',
-  keywords: ['ballo', 'yoga', 'massaggi', 'benessere', 'movimento', 'olistico'],
+    'Guapacha: social dance, wedding, eventi, corsi PRO e sessioni individuali a Roma Parioli.',
+  keywords: ['social dance', 'wedding', 'eventi', 'corsi', 'dance studio', 'Roma Parioli'],
   openGraph: {
-    title: 'OMA — Organic Movement & Alignment Hub',
+    title: 'Guapacha — Movement, elegance, community',
     description:
-      'Centro olistico per ballo, yoga e massaggi. Prenota la tua esperienza.',
+      'Social dance, wedding, eventi, corsi PRO e sessioni individuali a Roma Parioli.',
     type: 'website',
   },
 };
@@ -40,7 +40,7 @@ export default function RootLayout({
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <a href="/" className="text-2xl font-display font-light tracking-wider text-sand-700">
-                OMA
+                Guapacha
               </a>
 
               {/* Nav links */}

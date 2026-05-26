@@ -1,223 +1,188 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import BentoGrid, { BentoItem, bentoVariants } from '@/components/BentoGrid';
 import { Button } from '@/components/ui';
 
-// Import dinamico della scena 3D (no SSR per Three.js)
-const SpaceTunnelScene = dynamic(
-  () => import('@/components/Scene3D/SpaceTunnel'),
-  { ssr: false, loading: () => <div className="canvas-container bg-sand-100" /> }
-);
+type ContentBlock = {
+  id: string;
+  key: string;
+  page: string;
+  title: string;
+  subtitle?: string | null;
+  body?: string | null;
+  cta_label?: string | null;
+  cta_href?: string | null;
+};
 
-/**
- * Landing page con tunnel 3D e CTA prenotazione
- */
+type MediaAsset = {
+  id: string;
+  section: string;
+  asset_type: string;
+  source: string;
+  title: string;
+  description?: string | null;
+  url: string;
+  poster_url?: string | null;
+};
+
+type VideoJob = {
+  id: string;
+  section: string;
+  prompt: string;
+  status: string;
+};
+
+const SpaceTunnelScene = dynamic(() => import('@/components/Scene3D/SpaceTunnel'), {
+  ssr: false,
+  loading: () => <div className="canvas-container bg-sand-100" />,
+});
+
 export default function HomePage() {
-  const promoRef = useRef<HTMLDivElement>(null);
+  const [blocks, setBlocks] = useState<ContentBlock[]>([]);
+  const [media, setMedia] = useState<MediaAsset[]>([]);
+  const [jobs, setJobs] = useState<VideoJob[]>([]);
 
-  // Smooth scroll per anchor links
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a[href^="#"]');
-      if (anchor) {
-        e.preventDefault();
-        const id = anchor.getAttribute('href')?.slice(1);
-        document.getElementById(id!)?.scrollIntoView({ behavior: 'smooth' });
-      }
-    };
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    fetch('/api/content?page=home')
+      .then((r) => r.json())
+      .then((data) => {
+        setBlocks(data.blocks || []);
+        setMedia(data.media || []);
+        setJobs(data.pendingVideoJobs || []);
+      })
+      .catch(() => {});
   }, []);
+
+  const hero = blocks.find((b) => b.key === 'home_hero');
+  const manifesto = blocks.find((b) => b.key === 'home_manifesto');
+  const courses = blocks.find((b) => b.key === 'home_courses');
 
   return (
     <>
-      {/* ── Hero Section con Tunnel 3D ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Sfondo 3D */}
         <SpaceTunnelScene />
-
-        {/* Contenuto sovrapposto */}
         <div className="content-overlay text-center px-4 max-w-4xl mx-auto">
-          <motion.h1
-            className="text-fluid-3xl font-display text-sand-800 mb-6"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-          >
-            Movimento.
-            <br />
-            <span className="text-sand-500">Respiro.</span>
-            <br />
-            Connessione.
-          </motion.h1>
-
-          <motion.p
-            className="text-fluid-lg text-sand-500 mb-10 max-w-xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            Ballo, yoga e massaggi in uno spazio pensato per il tuo
-            benessere olistico. Prenota la tua esperienza.
+          <motion.p className="text-xs uppercase tracking-[0.35em] text-terra-400 mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
+            Roma Parioli
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <a href="/servizi">
-              <Button size="lg">Scopri i Servizi</Button>
-            </a>
-            <a href="/servizi">
-              <Button variant="outline" size="lg">
-                Prenota Ora
-              </Button>
-            </a>
+          <motion.h1 className="text-fluid-3xl font-display text-sand-800 mb-6" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }}>
+            {hero?.title?.includes('Movement') ? 'Movement.' : 'Movimento.'}
+            <br />
+            <span className="text-sand-500">Eleganza.</span>
+            <br />
+            Community.
+          </motion.h1>
+          <motion.p className="text-fluid-lg text-sand-500 mb-10 max-w-xl mx-auto" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}>
+            {hero?.body || 'Social dance, wedding, eventi, corsi PRO e sessioni individuali. Un luxury movement studio ispirato a yes-dancebiennale.'}
+          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href={hero?.cta_href || '/servizi'}><Button size="lg">{hero?.cta_label || 'Scopri i corsi'}</Button></a>
+            <a href="#manifesto"><Button variant="outline" size="lg">Leggi il manifesto</Button></a>
           </motion.div>
         </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <svg className="w-6 h-6 text-sand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </motion.div>
       </section>
 
-      {/* ── Servizi Preview (Bento Grid) ── */}
-      <section className="py-20 px-4" id="servizi">
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="text-fluid-2xl font-display text-sand-700 mb-3">
-            I Nostri Percorsi
-          </h2>
-          <p className="text-sand-500 max-w-md mx-auto">
-            Tre dimensioni del benessere, un unico spazio.
+      <section className="py-20 px-4" id="manifesto">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-xs uppercase tracking-[0.35em] text-terra-400 mb-4">Manifesto</p>
+          <h2 className="text-fluid-2xl font-display text-sand-700 mb-6">{manifesto?.title || 'Corpo, mente e anima in movimento.'}</h2>
+          <p className="text-sand-500 text-fluid-base leading-relaxed max-w-3xl mx-auto">
+            {manifesto?.body || 'Guapacha è uno spazio dove la danza diventa esperienza, relazione e stile. Una cultura del movimento viva, elegante e contemporanea.'}
           </p>
-        </motion.div>
-
-        <BentoGrid>
-          <BentoItem className={bentoVariants.featured} delay={0}>
-            <div className="h-full flex flex-col justify-between">
-              <div>
-                <span className="text-xs uppercase tracking-widest text-terra-400">
-                  Ballo
-                </span>
-                <h3 className="text-fluid-xl font-display text-sand-700 mt-2">
-                  Movimento Libero
-                </h3>
-                <p className="text-sand-500 mt-3 text-fluid-sm">
-                  Sessioni di ballo contemporaneo e movimento espressivo
-                  per riconnettere corpo e anima.
-                </p>
-              </div>
-              <a href="/servizi" className="text-sand-600 hover:text-sand-800 text-sm mt-4 inline-flex items-center gap-1">
-                Scopri →
-              </a>
-            </div>
-          </BentoItem>
-
-          <BentoItem className={bentoVariants.standard} delay={0.1}>
-            <span className="text-xs uppercase tracking-widest text-terra-400">
-              Yoga
-            </span>
-            <h3 className="text-fluid-lg font-display text-sand-700 mt-2">
-              Presenza
-            </h3>
-            <p className="text-sand-500 mt-2 text-fluid-sm">
-              Hatha, Vinyasa e Yin yoga per ogni livello.
-            </p>
-          </BentoItem>
-
-          <BentoItem className={bentoVariants.standard} delay={0.2}>
-            <span className="text-xs uppercase tracking-widest text-terra-400">
-              Massaggio
-            </span>
-            <h3 className="text-fluid-lg font-display text-sand-700 mt-2">
-              Rigenerazione
-            </h3>
-            <p className="text-sand-500 mt-2 text-fluid-sm">
-              Deconnettiti con trattamenti olistici.
-            </p>
-          </BentoItem>
-
-          <BentoItem className={bentoVariants.wide} delay={0.3}>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <span className="text-xs uppercase tracking-widest text-terra-400">
-                  Promozioni
-                </span>
-                <h3 className="text-fluid-lg font-display text-sand-700 mt-1">
-                  Sessioni Lampo
-                </h3>
-                <p className="text-sand-500 text-fluid-sm mt-1">
-                  Prenota sessioni last-minute a prezzi ridotti.
-                </p>
-              </div>
-              <div className="text-3xl">✨</div>
-            </div>
-          </BentoItem>
-        </BentoGrid>
-      </section>
-
-      {/* ── Chi Siamo ── */}
-      <section className="py-20 px-4 bg-sand-200/50" id="chi-siamo">
-        <div className="max-w-3xl mx-auto text-center">
-          <motion.h2
-            className="text-fluid-2xl font-display text-sand-700 mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            Chi Siamo
-          </motion.h2>
-          <motion.p
-            className="text-fluid-base text-sand-500 leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            OMA è uno spazio dedicato al movimento consapevole e al benessere olistico.
-            Nasce dalla convinzione che ballo, yoga e massaggi non siano pratiche separate,
-            ma facce diverse di un unico percorso verso l'armonia interiore.
-            I nostri istruttori sono professionisti certificati con anni di esperienza.
-          </motion.p>
         </div>
       </section>
 
-      {/* ── CTA Finale ── */}
-      <section className="py-20 px-4" id="contatti">
-        <motion.div
-          className="max-w-2xl mx-auto text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="text-fluid-2xl font-display text-sand-700 mb-4">
-            Pronto a muoverti?
-          </h2>
-          <p className="text-sand-500 mb-8">
-            Prenota la tua prima esperienza OMA e scopri il potere del movimento consapevole.
-          </p>
-          <a href="/servizi">
-            <Button size="lg">Prenota Ora</Button>
-          </a>
-        </motion.div>
+      <section className="py-20 px-4 bg-sand-200/40" id="percorsi">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-xs uppercase tracking-[0.35em] text-terra-400 mb-3">Programma</p>
+            <h2 className="text-fluid-2xl font-display text-sand-700">{courses?.title || 'I percorsi Guapacha'}</h2>
+          </div>
+          <BentoGrid>
+            <BentoItem className={bentoVariants.featured} delay={0}>
+              <h3 className="text-fluid-xl font-display text-sand-700">Corsi</h3>
+              <p className="text-sand-500 mt-3">Social dance per imparare con ritmo, tecnica e presenza.</p>
+            </BentoItem>
+            <BentoItem className={bentoVariants.standard} delay={0.1}>
+              <h3 className="text-fluid-lg font-display text-sand-700">Corsi PRO</h3>
+              <p className="text-sand-500 mt-2">Percorsi avanzati per crescere davvero.</p>
+            </BentoItem>
+            <BentoItem className={bentoVariants.standard} delay={0.2}>
+              <h3 className="text-fluid-lg font-display text-sand-700">Wedding</h3>
+              <p className="text-sand-500 mt-2">First dance e coreografie eleganti.</p>
+            </BentoItem>
+            <BentoItem className={bentoVariants.wide} delay={0.3}>
+              <h3 className="text-fluid-lg font-display text-sand-700">Eventi</h3>
+              <p className="text-sand-500 mt-2">Serate, performance e community nights su misura.</p>
+            </BentoItem>
+          </BentoGrid>
+        </div>
+      </section>
+
+      {media.length > 0 && (
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-10">
+              <p className="text-xs uppercase tracking-[0.35em] text-terra-400 mb-3">Media</p>
+              <h2 className="text-fluid-2xl font-display text-sand-700">Video e immagini</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {media.slice(0, 4).map((asset) => (
+                <article key={asset.id} className="service-card rounded-2xl overflow-hidden">
+                  {asset.asset_type === 'video' ? (
+                    <video className="w-full aspect-video object-cover" controls poster={asset.poster_url || undefined} src={asset.url} />
+                  ) : (
+                    <img className="w-full aspect-video object-cover" src={asset.url} alt={asset.title} />
+                  )}
+                  <div className="p-5">
+                    <p className="text-xs uppercase tracking-[0.25em] text-terra-400 mb-2">{asset.section} · {asset.source}</p>
+                    <h3 className="font-display text-sand-700 text-xl">{asset.title}</h3>
+                    {asset.description && <p className="text-sand-500 mt-2">{asset.description}</p>}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {jobs.length > 0 && (
+        <section className="py-20 px-4 bg-sand-200/30">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-10">
+              <p className="text-xs uppercase tracking-[0.35em] text-terra-400 mb-3">Grok queue</p>
+              <h2 className="text-fluid-2xl font-display text-sand-700">Video da generare</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {jobs.slice(0, 6).map((job) => (
+                <div key={job.id} className="bento-item p-5">
+                  <p className="text-xs uppercase tracking-[0.25em] text-terra-400 mb-2">{job.section}</p>
+                  <h3 className="font-display text-sand-700 text-lg mb-2">{job.status}</h3>
+                  <p className="text-sand-500 text-sm">{job.prompt}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="py-20 px-4" id="sessioni">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-fluid-2xl font-display text-sand-700 mb-4">Sessioni individuali</h2>
+          <p className="text-sand-500 mb-8">Lezioni 1:1 costruite sul tuo obiettivo, il tuo stile e il tuo livello.</p>
+          <a href="/servizi"><Button size="lg">Vai ai dettagli</Button></a>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-sand-800 text-sand-100" id="cta">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-fluid-2xl font-display mb-4">Vuoi iniziare?</h2>
+          <p className="text-sand-300 mb-8">Scrivici e troviamo il percorso giusto per te.</p>
+          <a href="/servizi"><Button size="lg">Prenota una lezione</Button></a>
+        </div>
       </section>
     </>
   );

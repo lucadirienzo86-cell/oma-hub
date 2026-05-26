@@ -8,7 +8,7 @@ import { createPaymentIntent } from '@/lib/stripe';
  */
 export async function POST(req: NextRequest) {
   try {
-    const { sessionId, clientName, clientEmail, clientPhone, amount } =
+    const { sessionId, clientName, clientEmail, clientPhone } =
       await req.json();
 
     // Validazione base
@@ -41,10 +41,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Calcola prezzo finale
-    let finalPrice = Number(session.service?.base_price) || amount;
-    if (session.is_promotion && session.discount_percentage > 0) {
-      finalPrice = finalPrice * (1 - session.discount_percentage / 100);
-    }
+    const finalPrice = session.service?.base_price
+      ? Number(session.service.base_price) * (session.is_promotion && session.discount_percentage > 0 ? 1 - session.discount_percentage / 100 : 1)
+      : 0;
 
     // Crea PaymentIntent su Stripe
     const paymentIntent = await createPaymentIntent(finalPrice, 'eur', {
@@ -75,10 +74,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Incrementa il contatore delle prenotazioni
-    await supabase.rpc('increment_session_bookings', {
-      session_id: sessionId,
-    });
+    // Increment handled by DB trigger (atomic)
+    // No client trust: all validation server-side done above
 
     return NextResponse.json({
       success: true,

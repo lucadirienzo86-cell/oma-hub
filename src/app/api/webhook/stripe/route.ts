@@ -26,10 +26,11 @@ export async function POST(req: NextRequest) {
         const piId = paymentIntent.id;
 
         // Conferma la prenotazione associata
-        await supabaseAdmin
+        const { error } = await supabaseAdmin
           .from('bookings')
           .update({ payment_status: 'confirmed' })
           .eq('stripe_payment_intent_id', piId);
+        if (error) throw error;
 
         break;
       }
@@ -39,18 +40,20 @@ export async function POST(req: NextRequest) {
         const piId = paymentIntent.id;
 
         // Marca come fallita
-        const { data: booking } = await supabaseAdmin
+        const { data: booking, error } = await supabaseAdmin
           .from('bookings')
           .update({ payment_status: 'failed' })
           .eq('stripe_payment_intent_id', piId)
           .select()
           .single();
+        if (error) throw error;
 
         // Decrementa il contatore se la prenotazione esiste
         if (booking?.session_id) {
-          await supabaseAdmin.rpc('decrement_session_bookings', {
+          const { error: rpcError } = await supabaseAdmin.rpc('decrement_session_bookings', {
             session_id: booking.session_id,
           });
+          if (rpcError) throw rpcError;
         }
 
         break;

@@ -1,0 +1,49 @@
+GUAPACHA — VERCEL BLOB CHECKLIST
+
+Scelta storage:
+- Vercel Blob pubblico
+- niente video nel repo
+- media_assets come source of truth
+
+Struttura file consigliata:
+- guapacha/videos/hero-home-16x9.mp4
+- guapacha/posters/hero-home-16x9.jpg
+- guapacha/videos/courses-social-16x9.mp4
+- guapacha/posters/courses-social-16x9.jpg
+- guapacha/videos/pro-session-16x9.mp4
+- guapacha/posters/pro-session-16x9.jpg
+- guapacha/videos/wedding-first-dance-16x9.mp4
+- guapacha/posters/wedding-first-dance-16x9.jpg
+- guapacha/videos/events-night-16x9.mp4
+- guapacha/posters/events-night-16x9.jpg
+- guapacha/videos/private-session-16x9.mp4
+- guapacha/posters/private-session-16x9.jpg
+- guapacha/videos/community-backstage-16x9.mp4
+- guapacha/posters/community-backstage-16x9.jpg
+- guapacha/videos/social-vertical-9x16.mp4
+- guapacha/posters/social-vertical-9x16.jpg
+
+Specifiche consigliate:
+- hero: 12s, 16:9, 4–8 MB max
+- video sezione: 10s, 16:9, 2–5 MB max
+- vertical: 8s, 9:16, 2–4 MB max
+- codec: H.264 mp4
+- poster: jpg o webp
+
+Ordine operativo:
+1. Genera i video con Grok usando i prompt finali
+2. Esporta poster per ogni video
+3. Carica tutti i file su Vercel Blob
+4. Copia la base URL pubblica
+5. Apri supabase/seed_guapacha_media_vercel_template.sql
+6. Sostituisci YOUR-VERCEL-BLOB-PUBLIC-BASE con la base URL reale
+7. Esegui il file SQL in Supabase
+8. Verifica /api/content?page=home
+9. Verifica home visualmente
+
+Verifica finale:
+- hero video carica veloce
+- poster visibile prima del play
+- media section mostra i video
+- nessun 404 sugli asset
+- mobile ok

@@ -3,8 +3,8 @@ import { PromotionBadge } from '@/components/ui';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Servizi — OMA Hub',
-  description: 'Ballo, yoga e massaggi. Scegli il tuo percorso di benessere.',
+  title: 'Guapacha — Corsi, wedding, eventi',
+  description: 'Social dance, wedding, eventi, corsi PRO e sessioni individuali a Roma Parioli.',
 };
 
 /**
@@ -36,9 +36,9 @@ export default async function ServiziPage() {
   );
 
   const categoryLabels: Record<string, string> = {
-    ballo: 'Ballo & Movimento',
-    yoga: 'Yoga & Respiro',
-    massaggio: 'Massaggio & Rigenerazione',
+    ballo: 'Corsi',
+    yoga: 'Corsi PRO',
+    massaggio: 'Sessioni individuali',
   };
 
   // Stile card per categoria
@@ -49,21 +49,20 @@ export default async function ServiziPage() {
   };
 
   const categoryIcons: Record<string, string> = {
-    ballo: '💃',
-    yoga: '🧘',
-    massaggio: '🤲',
+    ballo: '✦',
+    yoga: '✦',
+    massaggio: '✦',
   };
 
   return (
     <div className="min-h-screen py-12 px-4">
-      {/* Header */}
       <div className="max-w-5xl mx-auto text-center mb-16 pt-8">
+        <p className="text-xs uppercase tracking-[0.35em] text-terra-400 mb-4">Programma</p>
         <h1 className="text-fluid-2xl font-display text-sand-700 mb-4">
-          I Nostri Servizi
+          I percorsi Guapacha
         </h1>
-        <p className="text-sand-500 max-w-lg mx-auto text-fluid-base">
-          Tre dimensioni del benessere per il tuo equilibrio interiore.
-          Scegli il percorso che risuona con te.
+        <p className="text-sand-500 max-w-2xl mx-auto text-fluid-base">
+          Social dance, wedding, eventi, corsi PRO e sessioni individuali a Roma Parioli.
         </p>
       </div>
 

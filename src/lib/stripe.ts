@@ -5,7 +5,7 @@ let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
   if (!_stripe) {
     const key = process.env.STRIPE_SECRET_KEY;
-    if (!key || key.startsWith('pk_') && !key.startsWith('sk_')) {
+    if (!key || !key.startsWith('sk_')) {
       throw new Error('STRIPE_SECRET_KEY non configurata');
     }
     _stripe = new Stripe(key, {

@@ -100,8 +100,6 @@ export default function BookingForm({ serviceId, onSuccess }: BookingFormProps) 
       const session = sessions.find((s) => s.id === selectedSession);
       if (!session) throw new Error('Sessione non trovata');
 
-      const price = getPrice(session);
-
       // Chiamata API per creare la prenotazione
       const res = await fetch('/api/bookings', {
         method: 'POST',
@@ -111,7 +109,6 @@ export default function BookingForm({ serviceId, onSuccess }: BookingFormProps) 
           clientName,
           clientEmail,
           clientPhone,
-          amount: price,
         }),
       });
 
